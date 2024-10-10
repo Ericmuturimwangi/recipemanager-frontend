@@ -1,21 +1,41 @@
-
-import React from 'react';
-import Header from './components/Header';
-import Button from './components/Button';
-import Card from './components/Card';
+import React, { useEffect, useState } from 'react';
 
 const App = () => {
+  const [recipes, setRecipes] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/recipes/');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setRecipes(data);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
+  if (error) {
+    return <div>Error fetching recipes: {error}</div>;
+  }
+
   return (
     <div className="container mx-auto">
-      <Header />
-      <div className="mt-5">
-        <Button label="Add Recipe" onClick={() => alert('Button Clicked!')} />
-      </div>
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card title="Spaghetti Bolognese" description="A classic Italian pasta dish." />
-        <Card title="Chicken Curry" description="A spicy and flavorful dish." />
-        <Card title="Caesar Salad" description="A fresh and healthy salad." />
-      </div>
+      <h1 className="text-2xl font-bold">Recipes</h1>
+      <ul>
+        {recipes.map(recipe => (
+          <li key={recipe.id} className="my-2 p-4 border border-gray-300 rounded">
+            <h2 className="text-xl">{recipe.title}</h2>
+            <p>{recipe.description}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
